@@ -95,3 +95,18 @@ Krok Scan CVE (Trivy) wykorzystuje aquasecurity/trivy-action, by przeskanować z
                 cache-from: type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache
                 cache-to: type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache,mode=max
 ```
+
+Krok "Push image to GitHub Container Registry" wypycha obraz tylko gdy trivy nie zgłosi krytycznych podatności. "platforms: linux/amd64,linux/arm64" – obraz zostaje zbudowany wieloplatformowo (w tym dla architektury ARM, np. Raspberry Pi)."cache-from" i "cache-to" – konfiguruje cache warstw Dockera w DockerHub, by przyspieszyć przyszłe buildy.
+
+---
+
+## Wykonanie Github Action
+
+### 1. użycie workflow_dispatch
+![workflow-dispatch](images/workflow-dispatch.png)
+
+### 2. uzycie git tags
+![git-tags](images/git-tags.png)
+
+## potwiedzienie działania
+![potwierdzenie](images/potwierdzenie.png)
