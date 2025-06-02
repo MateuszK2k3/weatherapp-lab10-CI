@@ -104,6 +104,14 @@ jobs:
             run: |
                 echo "=== PODSUMOWANIE ==="
                 echo "Tag wybrany przez metadata-action: ${{ steps.meta.outputs.tags }}"
-                echo "Rezultat skanu Trivy: $([[ \"${{ steps.trivy-scan.outcome }}\" == \"success\" ]] && echo \"brak krytycznych CVE\" || echo \"znaleziono krytyczne CVE\")"
-                echo "Obraz wypchnięty do GHCR: $([[ \"${{ steps.trivy-scan.outcome }}\" == \"success\" ]] && echo \"tak\" || echo \" nie (przerwane)\")"
-              
+    
+                if [[ "${{ steps.trivy-scan.outcome }}" == "success" ]]; then
+                RESULT="brak krytycznych CVE"
+                PUSHED="tak"
+                else
+                RESULT="znaleziono krytyczne CVE"
+                PUSHED="nie (przerwane)"
+                fi
+    
+                echo "Rezultat skanu Trivy: $RESULT"
+                echo "Obraz wypchnięty do GHCR: $PUSHED"
