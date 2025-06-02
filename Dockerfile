@@ -16,7 +16,7 @@ RUN pip install --upgrade pip && \
 # =========================
 # STAGE 2: Final image
 # =========================
-FROM python:3.13-alpine3.18
+FROM python:3.13-alpine3
 
 # OCI standard labels (autor itd.)
 LABEL org.opencontainers.image.title="Weather Flask App"
