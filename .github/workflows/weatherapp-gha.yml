@@ -71,7 +71,7 @@ jobs:
             id: trivy-scan
             uses: aquasecurity/trivy-action@0.28.0
             with:
-                image-ref: ${{ steps.meta.outputs.tags }}
+                image-ref: ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}
                 format: 'table'
                 exit-code: '1' 
                 severity: 'CRITICAL,HIGH'
