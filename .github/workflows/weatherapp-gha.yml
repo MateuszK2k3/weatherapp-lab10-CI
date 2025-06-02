@@ -71,7 +71,7 @@ jobs:
 
         -   name: Scan CVE (Trivy)
             id: trivy-scan
-            uses: aquasecurity/trivy-action@v1.2.5
+            uses: aquasecurity/trivy-action@v0.21.0
             with:
                 image-ref: ${{ steps.meta.outputs.tags }}
                 format: 'table'
