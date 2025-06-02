@@ -10,7 +10,7 @@ on:
 
 env:
   DOCKERHUB_REPO: ${{ vars.DOCKERHUB_USERNAME }}/weatherapp-lab10
-  GHCR_REPO: ghcr.io/${{ github.repository_owner }}/weatherapp-lab10
+  GHCR_REPO: ghcr.io/${{ vars.GHCR_OWNER }}/weatherapp-lab10
 
 jobs:
   build-and-publish:
