@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pogoda {{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-700">Pogoda w {{ title }}</h1>
+        <form action="/weather" class="flex gap-2 mb-6">
+            <input type="text" name="city" id="city" placeholder="Wpisz miasto" class="border p-3 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">Sprawdź pogodę</button>
+        </form>
+
+        <div id="weather-result" class="space-y-4 text-gray-700">
+            <h2 class="text-2xl font-semibold text-blue-600" id="city-name">{{ title }}</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <p class="font-medium">Temperatura:</p><p>{{ temp }}°C (Odczuwalna: {{ feels_like }}°C)</p>
+                <p class="font-medium">Wilgotność:</p><p>{{ humidity }}%</p>
+                <p class="font-medium">Ciśnienie:</p><p>{{ pressure }} hPa</p>
+                <p class="font-medium">Wiatr:</p><p>{{ wind_speed }} m/s, kierunek: {{ wind_deg }}°</p>
+                <p class="font-medium">Widoczność:</p><p>{{ visibility }} m</p>
+                <p class="font-medium">Zachmurzenie:</p><p>{{ clouds }}%</p>
+            </div>
+            <p class="italic text-gray-600" id="weather-desc">{{ desc }}</p>
+            <img src="http://openweathermap.org/img/wn/{{ icon }}@2x.png" id="weather-icon" alt="Ikona pogody" class="mx-auto mt-4 rounded-lg shadow-md" />
+        </div>
+    </div>
+</body>
+</html>

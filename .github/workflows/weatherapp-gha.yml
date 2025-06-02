@@ -1,0 +1,109 @@
+name: weatherapp GHA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+
+env:
+  DOCKERHUB_REPO: ${{ vars.DOCKERHUB_USERNAME }}/weatherapp-lab10
+  GHCR_REPO: ghcr.io/${{ github.repository_owner }}/weatherapp-lab10
+
+jobs:
+  build-and-publish:
+    name: Build, Scan i Publish Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write 
+      id-token: write 
+    steps:
+        -   name: Checkout repository
+            uses: actions/checkout@v3
+
+        -   name: Extract Docker metadata (tags)
+            id: meta
+            uses: docker/metadata-action@v5
+            with:
+                images: ${{ env.GHCR_REPO }}
+                flavor: latest=false
+                tags: |
+                    type=semver,pattern={{version}},priority=200
+                    type=sha,prefix=sha-,format=short,priority=100
+
+        -   name: QEMU set-up (multi-arch)
+            uses: docker/setup-qemu-action@v3
+
+        -   name: Buildx set-up
+            uses: docker/setup-buildx-action@v3
+
+        -   name: Log in to DockerHub 
+            uses: docker/login-action@v3
+            with:
+                registry: docker.io
+                username: ${{ vars.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        -   name: Log in to GitHub Container Registry
+            uses: docker/login-action@v3
+            with:
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+
+        -   name: Build image
+            id: build-push
+            uses: docker/build-push-action@v4
+            with:
+                context: .
+                file: ./Dockerfile
+                platforms: linux/amd64,linux/arm64
+                push: false
+                tags: ${{ steps.meta.outputs.tags }}
+                cache-from: |
+                    type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache
+                cache-to: |
+                    type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache,mode=max
+                load: true
+
+        -   name: Scan CVE (Trivy)
+            id: trivy-scan
+            uses: aquasecurity/trivy-action@v1.2.5
+            with:
+                image-ref: ${{ steps.meta.outputs.tags }}
+                format: 'table'
+                exit-code: '1' 
+                severity: 'CRITICAL,HIGH'
+            continue-on-error: true
+
+        -   name: Fail if CVE found
+            if: steps.trivy-scan.outcome == 'failure'
+            run: |
+                echo "Krytyczne lub wysokie CVE wykryte. Przerywam workflow."
+                exit 1
+
+        -   name: Push image to GitHub Container Registry
+            if: steps.trivy-scan.outcome == 'success'
+            uses: docker/build-push-action@v5
+            with:
+                context: .
+                file: ./Dockerfile
+                platforms: linux/amd64,linux/arm64
+                push: true
+                tags: |
+                    ${{ steps.meta.outputs.tags }}
+                    ${{ env.GHCR_REPO }}:latest
+                cache-from: type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache
+                cache-to: type=registry,ref=${{ env.DOCKERHUB_REPO }}:cache,mode=max
+
+        -   name: Summary
+            if: always()
+            run: |
+                echo "=== PODSUMOWANIE ==="
+                echo "Tag wybrany przez metadata-action: ${{ steps.meta.outputs.tags }}"
+                echo "Rezultat skanu Trivy: $([[ \"${{ steps.trivy-scan.outcome }}\" == \"success\" ]] && echo \"brak krytycznych CVE\" || echo \"znaleziono krytyczne CVE\")"
+                echo "Obraz wypchnięty do GHCR: $([[ \"${{ steps.trivy-scan.outcome }}\" == \"success\" ]] && echo \"tak\" || echo \" nie (przerwane)\")"
+              
